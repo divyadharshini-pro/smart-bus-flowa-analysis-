@@ -3,10 +3,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 app = Flask(__name__)
 app.secret_key = "smartbusflow_secret_key"
 
-
-# -----------------------------
-# Demo login credentials
-# -----------------------------
 USERS = {
     "admin": {
         "password": "admin123",
@@ -18,18 +14,40 @@ USERS = {
     }
 }
 
+# Bus details
+BUSES = [
+    {
+        "bus_number": "TN-30-AB-1001",
+        "driver": "Driver 1",
+        "phone": "9876543210",
+        "route": "Salem - Hosur",
+        "start": "Salem",
+        "destination": "Hosur",
+        "latitude": 11.6643,
+        "longitude": 78.1460,
+        "speed": 0,
+        "status": "Offline"
+    },
+    {
+        "bus_number": "TN-30-AB-1002",
+        "driver": "Driver 2",
+        "phone": "9876543211",
+        "route": "Salem - Bengaluru",
+        "start": "Salem",
+        "destination": "Bengaluru",
+        "latitude": 11.6643,
+        "longitude": 78.1460,
+        "speed": 0,
+        "status": "Offline"
+    }
+]
 
-# -----------------------------
-# Home / Login
-# -----------------------------
+
 @app.route("/")
 def login():
     return render_template("login.html")
 
 
-# -----------------------------
-# Login Authentication
-# -----------------------------
 @app.route("/login", methods=["POST"])
 def do_login():
 
@@ -46,7 +64,7 @@ def do_login():
         if user["role"] == "admin":
             return redirect(url_for("admin"))
 
-        elif user["role"] == "driver":
+        if user["role"] == "driver":
             return redirect(url_for("driver"))
 
     return render_template(
@@ -55,9 +73,6 @@ def do_login():
     )
 
 
-# -----------------------------
-# Admin Dashboard
-# -----------------------------
 @app.route("/admin")
 def admin():
 
@@ -66,13 +81,11 @@ def admin():
 
     return render_template(
         "admin.html",
-        username=session.get("username")
+        username=session.get("username"),
+        buses=BUSES
     )
 
 
-# -----------------------------
-# Driver Dashboard
-# -----------------------------
 @app.route("/driver")
 def driver():
 
@@ -81,55 +94,23 @@ def driver():
 
     return render_template(
         "driver.html",
-        username=session.get("username")
+        username=session.get("username"),
+        buses=BUSES
     )
 
 
-# -----------------------------
-# Bus Tracking Page
-# -----------------------------
 @app.route("/tracking")
 def tracking():
-
-    return render_template("tracking.html")
-
-
-# -----------------------------
-# GPS Location API
-# -----------------------------
-@app.route("/update_location", methods=["POST"])
-def update_location():
-
-    data = request.get_json()
-
-    latitude = data.get("latitude")
-    longitude = data.get("longitude")
-
-    # Demo response
-    return jsonify({
-        "status": "success",
-        "latitude": latitude,
-        "longitude": longitude
-    })
+    return render_template("tracking.html", buses=BUSES)
 
 
-# -----------------------------
-# Logout
-# -----------------------------
-@app.route("/logout")
-def logout():
+# -------------------------
+# ADD BUS
+# -------------------------
 
-    session.clear()
+@app.route("/add_bus", methods=["POST"])
+def add_bus():
 
-    return redirect(url_for("login"))
-
-
-# -----------------------------
-# Run Application
-# -----------------------------
-if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    bus = {
+        "bus_number": request.form.get("bus_number"),
+       
