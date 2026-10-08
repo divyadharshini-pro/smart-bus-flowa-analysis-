@@ -96,4 +96,73 @@
 
         .demo {
             margin-top: 22px;
-           
+            padding: 15px;
+            background: #f4f7fb;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .demo strong {
+            color: #173b7a;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <div class="logo">🚌</div>
+
+        <h1>SmartBus Flow</h1>
+
+        <div class="subtitle">
+            Smart Bus Tracking System
+        </div>
+
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/login" method="POST">
+
+            <label for="username">Username</label>
+
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter username"
+                required
+            >
+
+            <label for="password">Password</label>
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter password"
+                required
+            >
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+        <div class="demo">
+            <strong>Demo Login</strong><br><br>
+            Admin: admin / admin123<br>
+            Driver: driver / driver123
+        </div>
+
+    </div>
+
+</body>
+</html>
