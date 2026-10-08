@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SmartBus Flow - Admin Dashboard</title>
+    <title>SmartBus Flow - Admin</title>
 
     <style>
         body {
@@ -17,41 +17,366 @@
         header {
             background: #173b7a;
             color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .logout {
-            background: #e53935;
-            color: white;
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 6px;
+            padding: 18px;
+            text-align: center;
         }
 
         .container {
-            padding: 25px;
-            max-width: 1200px;
+            padding: 20px;
+            max-width: 1100px;
             margin: auto;
-        }
-
-        .welcome {
-            margin-bottom: 20px;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
         }
 
         .card {
-            background:
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 5px 0;
+            color: #173b7a;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 7px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+        }
+
+        button {
+            background: #173b7a;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #0f2b5c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #eef3fb;
+        }
+
+        .live {
+            color: green;
+            font-weight: bold;
+        }
+
+        .offline {
+            color: red;
+            font-weight: bold;
+        }
+
+        .tracking-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background: #198754;
+            color: white;
+            padding: 12px 18px;
+            text-decoration: none;
+            border-radius: 7px;
+        }
+
+        .logout {
+            float: right;
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 700px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a class="logout" href="/logout">Logout</a>
+    <h1>SmartBus Flow</h1>
+    <p>Admin Dashboard</p>
+</header>
+
+<div class="container">
+
+    <div class="cards">
+
+        <div class="card">
+            <p>Total Buses</p>
+            <h2>{{ buses|length }}</h2>
+        </div>
+
+        <div class="card">
+            <p>Drivers</p>
+            <h2>{{ buses|length }}</h2>
+        </div>
+
+        <div class="card">
+            <p>Live Tracking</p>
+            <h2>ON</h2>
+        </div>
+
+    </div>
+
+
+    <div class="box">
+
+        <h2>Add New Bus</h2>
+
+        <form action="/add_bus" method="POST">
+
+            <input
+                type="text"
+                name="bus_number"
+                placeholder="Bus Number"
+                required
+            >
+
+            <input
+                type="text"
+                name="driver"
+                placeholder="Driver Name"
+                required
+            >
+
+            <input
+                type="text"
+                name="phone"
+                placeholder="Driver Phone"
+                required
+            >
+
+            <input
+                type="text"
+                name="route"
+                placeholder="Route"
+                required
+            >
+
+            <input
+                type="text"
+                name="start"
+                placeholder="Start Location"
+                required
+            >
+
+            <input
+                type="text"
+                name="destination"
+                placeholder="Destination"
+                required
+            >
+
+            <button type="submit">
+                Add Bus
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="box">
+
+        <h2>Search Bus</h2>
+
+        <input
+            type="text"
+            id="search"
+            placeholder="Search bus number, driver or route"
+        >
+
+        <button onclick="searchBus()">
+            Search
+        </button>
+
+        <div id="searchResults"></div>
+
+    </div>
+
+
+    <div class="box">
+
+        <h2>All Buses</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Bus Number</th>
+                    <th>Driver</th>
+                    <th>Route</th>
+                    <th>Location</th>
+                    <th>Speed</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for bus in buses %}
+
+                <tr>
+
+                    <td>{{ bus.bus_number }}</td>
+
+                    <td>{{ bus.driver }}</td>
+
+                    <td>{{ bus.route }}</td>
+
+                    <td>
+                        {{ bus.latitude }},
+                        {{ bus.longitude }}
+                    </td>
+
+                    <td>
+                        {{ bus.speed }} km/h
+                    </td>
+
+                    <td>
+                        {% if bus.status == "Live" %}
+                            <span class="live">Live</span>
+                        {% else %}
+                            <span class="offline">Offline</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <div class="box">
+
+        <h2>Bus Tracking</h2>
+
+        <p>
+            View all buses on the live tracking map.
+        </p>
+
+        <a
+            class="tracking-btn"
+            href="/tracking"
+        >
+            View Bus Tracking
+        </a>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function searchBus() {
+
+    const query =
+        document.getElementById("search").value;
+
+    fetch(
+        "/search_bus?q=" +
+        encodeURIComponent(query)
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        let html = "";
+
+        if (data.length === 0) {
+
+            html = "<p>No buses found.</p>";
+
+        } else {
+
+            data.forEach(bus => {
+
+                html += `
+                    <div class="box">
+                        <strong>${bus.bus_number}</strong><br>
+                        Driver: ${bus.driver}<br>
+                        Route: ${bus.route}<br>
+                        Location:
+                        ${bus.latitude},
+                        ${bus.longitude}<br>
+                        Speed: ${bus.speed} km/h<br>
+                        Status: ${bus.status}
+                    </div>
+                `;
+
+            });
+
+        }
+
+        document.getElementById(
+            "searchResults"
+        ).innerHTML = html;
+
+    })
+    .catch(error => {
+
+        document.getElementById(
+            "searchResults"
+        ).innerHTML =
+            "<p>Search failed.</p>";
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
