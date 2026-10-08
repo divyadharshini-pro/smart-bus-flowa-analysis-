@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartBus Flow - Tracking</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        header {
+            background: #173b7a;
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 {
+            margin: 0;
+        }
+
+        .back {
+            background: white;
+            color: #173b7a;
+            text-decoration: none;
+            padding: 9px 15px;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        .title-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .title-box h1 {
+            margin-top: 0;
+            color: #173b7a;
+        }
+
+        .tracking-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .map {
+            width: 100%;
+            height: 450px;
+            background: #e8eef7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bus-marker {
+            position: absolute;
+            font-size: 38px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .info-box {
+            background: #f4f7fb;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .info-box strong {
+            display: block;
+            color: #173b7a;
+            margin-bottom: 6px;
+        }
+
+        .status {
+            color: #188038;
+            font-weight: bold;
+        }
+
+        #location {
+            margin-top: 15px;
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <h2>🚌 SmartBus Flow</h2>
+
+    <a href="/" class="back">
+        Back
+    </a>
+
+</header>
+
+<div class="container">
+
+    <div class="title-box">
+
+        <h1>🗺️ Live Bus Tracking</h1>
+
+        <p>
+            Monitor the current SmartBus location.
+        </p>
+
+    </div>
+
+    <div class="tracking-card">
+
+        <div class="map">
+
+            <div class="bus-marker">
+                🚌
+            </div>
+
+            <span>
+                SmartBus Live Tracking Map
+            </span>
+
+        </div>
+
+        <div class="info">
+
+            <div class="info-box">
+                <strong>Bus Number</strong>
+                SB-001
+            </div>
+
+            <div class="info-box">
+                <strong>Route</strong>
+                Salem → Hosur
+            </div>
+
+            <div class="info-box">
+                <strong>Status</strong>
+                <span class="status">
+                    🟢 Active
+                </span>
+            </div>
+
+            <div class="info-box">
+                <strong>Tracking</strong>
+                GPS Enabled
+            </div>
+
+        </div>
+
+        <div id="location">
+            Waiting for live GPS location...
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function getLocation() {
+
+    const locationText =
+        document.getElementById("location");
+
+    if (!navigator.geolocation) {
+
+        locationText.innerText =
+            "GPS is not supported by this browser.";
+
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            const latitude =
+                position.coords.latitude;
+
+            const longitude =
+                position.coords.longitude;
+
+            locationText.innerText =
+                "Current Location: " +
+                latitude.toFixed(6) +
+                ", " +
+                longitude.toFixed(6);
+
+        },
+
+        function() {
+
+            locationText.innerText =
+                "Location permission is required for live GPS.";
+
+        }
+
+    );
+}
+
+getLocation();
+
+</script>
+
+</body>
+</html>
