@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SmartBus Flow - Admin</title>
+    <title>SmartBus Flow - Admin Dashboard</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -21,142 +17,41 @@
         header {
             background: #173b7a;
             color: white;
-            padding: 18px 25px;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        header h2 {
+        header h1 {
             margin: 0;
+            font-size: 24px;
         }
 
         .logout {
-            background: white;
-            color: #173b7a;
+            background: #e53935;
+            color: white;
             text-decoration: none;
-            padding: 9px 15px;
-            border-radius: 7px;
-            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 6px;
         }
 
         .container {
             padding: 25px;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: auto;
         }
 
         .welcome {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-        }
-
-        .welcome h1 {
-            margin-top: 0;
-            color: #173b7a;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-        }
-
-        .card h3 {
-            margin-top: 0;
-            color: #173b7a;
-        }
-
-        .number {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .tracking-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 13px 20px;
-            background: #173b7a;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        .tracking-btn:hover {
-            background: #2f80ed;
-        }
-    </style>
-</head>
-
-<body>
-
-<header>
-    <h2>🚌 SmartBus Flow</h2>
-
-    <a href="/logout" class="logout">
-        Logout
-    </a>
-</header>
-
-<div class="container">
-
-    <div class="welcome">
-        <h1>Admin Dashboard</h1>
-
-        <p>
-            Welcome, <strong>{{ username }}</strong>
-        </p>
-
-        <p>
-            Manage and monitor the SmartBus Flow system from this dashboard.
-        </p>
-
-        <a href="/tracking" class="tracking-btn">
-            🗺️ View Bus Tracking
-        </a>
-    </div>
-
-    <div class="cards">
-
-        <div class="card">
-            <h3>🚌 Total Buses</h3>
-            <div class="number">10</div>
-            <p>Registered buses</p>
-        </div>
-
-        <div class="card">
-            <h3>👨‍✈️ Drivers</h3>
-            <div class="number">10</div>
-            <p>Active drivers</p>
-        </div>
-
-        <div class="card">
-            <h3>📍 Live Tracking</h3>
-            <div class="number">ON</div>
-            <p>GPS tracking system</p>
-        </div>
-
-        <div class="card">
-            <h3>🟢 System Status</h3>
-            <div class="number">Active</div>
-            <p>SmartBus Flow is running</p>
-        </div>
-
-    </div>
-
-</div>
-
-</body>
-</html>
+            background:
