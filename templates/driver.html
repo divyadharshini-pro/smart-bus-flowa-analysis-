@@ -2,114 +2,701 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SmartBus Flow - Live Tracking</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <!-- Leaflet Map -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <title>SmartBus Flow - Driver</title>
+
 
     <style>
 
         body {
+
             margin: 0;
+
             font-family: Arial, sans-serif;
+
             background: #f4f7fb;
+
             color: #222;
+
         }
+
 
         header {
+
             background: #173b7a;
+
             color: white;
-            padding: 18px 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+            padding: 20px;
+
+            text-align: center;
+
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .back {
-            background: white;
-            color: #173b7a;
-            text-decoration: none;
-            padding: 9px 15px;
-            border-radius: 6px;
-            font-weight: bold;
-        }
 
         .container {
-            max-width: 1200px;
+
+            max-width: 700px;
+
             margin: auto;
+
             padding: 20px;
+
         }
 
-        .panel {
+
+        .card {
+
             background: white;
+
             padding: 20px;
+
             margin-bottom: 20px;
+
             border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.08);
+
         }
 
-        .panel h2 {
-            margin-top: 0;
-            color: #173b7a;
-        }
 
-        .search {
-            display: flex;
-            gap: 10px;
-        }
+        select {
 
-        .search input {
-            flex: 1;
-            padding: 12px;
+            width: 100%;
+
+            padding: 13px;
+
             border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
+
+            border-radius: 7px;
+
+            font-size: 16px;
+
         }
+
 
         button {
-            border: none;
-            padding: 12px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
 
-        .search-btn {
-            background: #2196f3;
-            color: white;
-        }
-
-        .all-btn {
-            background: #173b7a;
-            color: white;
-        }
-
-        #map {
-            height: 500px;
             width: 100%;
-            border-radius: 10px;
+
+            padding: 14px;
+
+            margin-top: 10px;
+
+            border: none;
+
+            border-radius: 7px;
+
+            background: #173b7a;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+
         }
 
-        .bus-list {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(250px, 1fr)
+
+        .stop {
+
+            background: #dc3545;
+
+        }
+
+
+        .live {
+
+            color: green;
+
+            font-weight: bold;
+
+        }
+
+
+        .offline {
+
+            color: red;
+
+            font-weight: bold;
+
+        }
+
+
+        #message {
+
+            margin-top: 15px;
+
+            padding: 12px;
+
+            border-radius: 7px;
+
+            background: #eef3fb;
+
+        }
+
+
+        .location {
+
+            line-height: 1.8;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>🚌 SmartBus Flow</h1>
+
+    <p>Driver GPS Tracking</p>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="card">
+
+        <h2>Select Bus</h2>
+
+
+        <select id="busSelect">
+
+            <option value="">
+                Select your bus
+            </option>
+
+
+            {% for bus in buses %}
+
+            <option
+                value="{{ bus.bus_number }}"
+            >
+
+                {{ bus.bus_number }}
+                -
+                {{ bus.route }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <button
+            onclick="startTracking()"
+            id="startButton"
+        >
+
+            📍 Start Live Tracking
+
+        </button>
+
+
+        <button
+            onclick="stopTracking()"
+            id="stopButton"
+            class="stop"
+            style="display:none"
+        >
+
+            ⛔ Stop Tracking
+
+        </button>
+
+
+        <div id="message">
+
+            Select your bus and start tracking.
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>📍 Current GPS</h2>
+
+
+        <div class="location">
+
+            <b>Latitude:</b>
+
+            <span id="latitude">
+                -
+            </span>
+
+            <br>
+
+
+            <b>Longitude:</b>
+
+            <span id="longitude">
+                -
+            </span>
+
+            <br>
+
+
+            <b>Speed:</b>
+
+            <span id="speed">
+                0
+            </span>
+
+            km/h
+
+            <br>
+
+
+            <b>Accuracy:</b>
+
+            <span id="accuracy">
+                -
+            </span>
+
+            metres
+
+            <br>
+
+
+            <b>Status:</b>
+
+            <span
+                id="status"
+                class="offline"
+            >
+
+                Offline
+
+            </span>
+
+            <br>
+
+
+            <b>Last Update:</b>
+
+            <span id="lastUpdate">
+                -
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>🚌 Bus Details</h2>
+
+        <div id="busDetails">
+
+            Select a bus.
+
+        </div>
+
+    </div>
+
+
+    <a href="/logout">
+
+        Logout
+
+    </a>
+
+
+</div>
+
+
+<script>
+
+let watchId = null;
+
+let selectedBus = null;
+
+
+const buses =
+    {{ buses | tojson }};
+
+
+document
+    .getElementById("busSelect")
+    .addEventListener(
+        "change",
+        showBusDetails
+    );
+
+
+function showBusDetails() {
+
+    const busNumber =
+        document.getElementById(
+            "busSelect"
+        ).value;
+
+
+    selectedBus =
+        buses.find(
+            bus =>
+                bus.bus_number === busNumber
+        );
+
+
+    if (!selectedBus) {
+
+        document.getElementById(
+            "busDetails"
+        ).innerHTML =
+            "Select a bus.";
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "busDetails"
+    ).innerHTML = `
+
+        <b>Bus Number:</b>
+        ${selectedBus.bus_number}
+
+        <br><br>
+
+        <b>Driver:</b>
+        ${selectedBus.driver}
+
+        <br><br>
+
+        <b>Phone:</b>
+        ${selectedBus.phone}
+
+        <br><br>
+
+        <b>Route:</b>
+        ${selectedBus.route}
+
+        <br><br>
+
+        <b>Start:</b>
+        ${selectedBus.start}
+
+        <br><br>
+
+        <b>Destination:</b>
+        ${selectedBus.destination}
+
+    `;
+
+}
+
+
+function startTracking() {
+
+    if (!selectedBus) {
+
+        alert(
+            "Please select a bus first."
+        );
+
+        return;
+
+    }
+
+
+    if (!navigator.geolocation) {
+
+        alert(
+            "GPS is not supported on this phone."
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "message"
+    ).innerText =
+        "Requesting GPS permission...";
+
+
+    watchId =
+        navigator.geolocation.watchPosition(
+
+            sendLocation,
+
+            gpsError,
+
+            {
+                enableHighAccuracy: true,
+
+                maximumAge: 3000,
+
+                timeout: 10000
+            }
+
+        );
+
+
+    document.getElementById(
+        "startButton"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "stopButton"
+    ).style.display =
+        "block";
+
+}
+
+
+function sendLocation(position) {
+
+    const latitude =
+        position.coords.latitude;
+
+
+    const longitude =
+        position.coords.longitude;
+
+
+    const speed =
+        position.coords.speed;
+
+
+    const accuracy =
+        position.coords.accuracy;
+
+
+    let speedKmh = 0;
+
+
+    if (speed !== null) {
+
+        speedKmh =
+            speed * 3.6;
+
+    }
+
+
+    document.getElementById(
+        "latitude"
+    ).innerText =
+        latitude.toFixed(6);
+
+
+    document.getElementById(
+        "longitude"
+    ).innerText =
+        longitude.toFixed(6);
+
+
+    document.getElementById(
+        "speed"
+    ).innerText =
+        speedKmh.toFixed(1);
+
+
+    document.getElementById(
+        "accuracy"
+    ).innerText =
+        accuracy.toFixed(1);
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "Live";
+
+
+    document.getElementById(
+        "status"
+    ).className =
+        "live";
+
+
+    document.getElementById(
+        "lastUpdate"
+    ).innerText =
+        new Date().toLocaleTimeString();
+
+
+    document.getElementById(
+        "message"
+    ).innerText =
+        "🟢 GPS location is being sent to server.";
+
+
+    fetch(
+        "/update_location",
+        {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+
+                bus_number:
+                    selectedBus.bus_number,
+
+                latitude:
+                    latitude,
+
+                longitude:
+                    longitude,
+
+                speed:
+                    speedKmh
+
+            })
+
+        }
+
+    )
+
+    .then(
+        response =>
+            response.json()
+    )
+
+    .then(
+        data => {
+
+            console.log(
+                "Server:",
+                data
             );
-            gap: 15px;
+
         }
 
-        .bus-card {
-            background: #f8f
+    )
+
+    .catch(
+        error => {
+
+            console.error(
+                error
+            );
+
+            document.getElementById(
+                "message"
+            ).innerText =
+                "⚠️ Unable to send GPS to server.";
+
+        }
+    );
+
+}
+
+
+function gpsError(error) {
+
+    let message =
+        "GPS error.";
+
+
+    if (error.code === 1) {
+
+        message =
+            "GPS permission denied. Please allow location permission.";
+
+    }
+
+    else if (error.code === 2) {
+
+        message =
+            "GPS location unavailable.";
+
+    }
+
+    else if (error.code === 3) {
+
+        message =
+            "GPS request timed out.";
+
+    }
+
+
+    document.getElementById(
+        "message"
+    ).innerText =
+        "❌ " + message;
+
+}
+
+
+function stopTracking() {
+
+    if (watchId !== null) {
+
+        navigator.geolocation.clearWatch(
+            watchId
+        );
+
+        watchId = null;
+
+    }
+
+
+    document.getElementById(
+        "startButton"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "stopButton"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "Offline";
+
+
+    document.getElementById(
+        "status"
+    ).className =
+        "offline";
+
+
+    document.getElementById(
+        "message"
+    ).innerText =
+        "GPS tracking stopped.";
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
