@@ -1,0 +1,42 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #222;
+}
+
+button,
+input {
+    font-family: inherit;
+}
+
+a {
+    transition: 0.2s ease;
+}
+
+button {
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 15px;
+    }
+
+    header h2 {
+        font-size: 18px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .map {
+        height: 350px;
+    }
+}
