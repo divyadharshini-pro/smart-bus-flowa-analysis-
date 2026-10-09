@@ -1,11 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SmartBus Flow - Live Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SmartBus Flow - Live Map</title>
 
     <link rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -16,56 +15,42 @@
             font-family: Arial, sans-serif;
             background: #f4f7fb;
         }
-
         header {
             background: #173b7a;
             color: white;
+            padding: 15px;
             text-align: center;
-            padding: 18px;
         }
-
         .container {
             max-width: 1100px;
             margin: auto;
-            padding: 15px;
+            padding: 12px;
         }
-
         .card {
             background: white;
-            padding: 18px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        #map {
-            width: 100%;
-            height: 500px;
-            border-radius: 10px;
-        }
-
-        .bus {
-            border: 1px solid #ddd;
             padding: 15px;
-            margin-top: 10px;
+            margin-bottom: 15px;
             border-radius: 10px;
         }
-
-        .live {
-            color: green;
-            font-weight: bold;
+        #map {
+            height: 65vh;
+            min-height: 350px;
+            width: 100%;
+            border-radius: 10px;
         }
-
-        .offline {
-            color: red;
-            font-weight: bold;
+        .bus {
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
-
-        .back {
+        .live { color: green; font-weight: bold; }
+        .offline { color: red; font-weight: bold; }
+        a {
             display: inline-block;
+            padding: 12px;
             background: #173b7a;
             color: white;
-            padding: 12px 18px;
             text-decoration: none;
             border-radius: 7px;
         }
@@ -73,232 +58,117 @@
 </head>
 
 <body>
-
 <header>
-    <h1>🚌 SmartBus Flow</h1>
+    <h2>SmartBus Flow</h2>
     <p>Real-Time Bus Tracking</p>
 </header>
 
 <div class="container">
-
     <div class="card">
-        <h2>🗺️ Live Bus Map</h2>
+        <h3>Live Bus Map</h3>
+        <p id="mapMessage">Loading map...</p>
         <div id="map"></div>
     </div>
 
     <div class="card">
-        <h2>🚍 Bus Status</h2>
-        <div id="busList">
-            Loading...
-        </div>
+        <h3>Bus Status</h3>
+        <div id="busList">Loading buses...</div>
     </div>
 
-    <a href="/admin" class="back">
-        ← Back to Admin
-    </a>
-
+    <a href="/admin">Back to Admin</a>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
+const map = L.map("map").setView([11.6643, 78.1460], 9);
 
-let map;
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);
 
-let markers = {};
-
-
-/* CREATE MAP */
-
-map = L.map("map").setView(
-    [11.6643, 78.1460],
-    9
-);
-
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-    }
-).addTo(map);
-
-
-/* LOAD BUSES */
+const markers = {};
+let firstBusCentered = false;
 
 function loadBuses() {
-
-    fetch("/api/buses")
-
-    .then(function(response) {
+    fetch("/api/buses", { cache: "no-store" })
+    .then(response => {
+        if (!response.ok) throw new Error("Bus API failed");
         return response.json();
     })
+    .then(buses => {
+        let html = "";
+        let validLocations = 0;
 
-    .then(function(buses) {
+        buses.forEach(bus => {
+            const lat = Number(bus.latitude);
+            const lng = Number(bus.longitude);
+            const hasGPS =
+                Number.isFinite(lat) &&
+                Number.isFinite(lng) &&
+                lat >= -90 && lat <= 90 &&
+                lng >= -180 && lng <= 180 &&
+                !(lat === 0 && lng === 0);
 
-        updateBusList(buses);
+            const live = bus.status === "Live";
+            const statusClass = live ? "live" : "offline";
 
-        updateMap(buses);
+            html += `
+                <div class="bus">
+                    <b>${bus.bus_number}</b><br>
+                    Driver: ${bus.driver}<br>
+                    Route: ${bus.route}<br>
+                    Location: ${hasGPS ? lat.toFixed(6) + ", " + lng.toFixed(6) : "GPS not available"}<br>
+                    Speed: ${bus.speed} km/h<br>
+                    Status: <span class="${statusClass}">${bus.status}</span>
+                </div>`;
 
-    })
+            if (!hasGPS) return;
 
-    .catch(function(error) {
+            validLocations++;
 
-        console.log(error);
+            const position = [lat, lng];
+            const popup = `
+                <b>Bus: ${bus.bus_number}</b><br>
+                Driver: ${bus.driver}<br>
+                Route: ${bus.route}<br>
+                Speed: ${bus.speed} km/h<br>
+                Status: ${bus.status}`;
+
+            if (markers[bus.bus_number]) {
+                markers[bus.bus_number].setLatLng(position);
+                markers[bus.bus_number].setPopupContent(popup);
+            } else {
+                markers[bus.bus_number] = L.marker(position)
+                    .addTo(map)
+                    .bindPopup(popup);
+            }
+
+            // Center the map on the first valid GPS location.
+            if (!firstBusCentered && live) {
+                map.setView(position, 16);
+                firstBusCentered = true;
+            }
+        });
 
         document.getElementById("busList").innerHTML =
-            "Unable to load bus data.";
+            html || "No buses added yet.";
 
+        document.getElementById("mapMessage").textContent =
+            validLocations
+                ? "GPS locations received: " + validLocations
+                : "No valid GPS coordinates received yet.";
+    })
+    .catch(error => {
+        document.getElementById("mapMessage").textContent =
+            "Could not load bus locations. Refresh and try again.";
+        console.error(error);
     });
-
 }
 
-
-/* BUS LIST */
-
-function updateBusList(buses) {
-
-    let html = "";
-
-    buses.forEach(function(bus) {
-
-        let statusClass =
-            bus.status === "Live"
-            ? "live"
-            : "offline";
-
-        html += `
-
-            <div class="bus">
-
-                <h3>
-                    🚌 ${bus.bus_number}
-                </h3>
-
-                <b>Driver:</b>
-                ${bus.driver}
-
-                <br><br>
-
-                <b>Phone:</b>
-                ${bus.phone}
-
-                <br><br>
-
-                <b>Route:</b>
-                ${bus.route}
-
-                <br><br>
-
-                <b>Location:</b>
-                ${bus.latitude},
-                ${bus.longitude}
-
-                <br><br>
-
-                <b>Speed:</b>
-                ${bus.speed} km/h
-
-                <br><br>
-
-                <b>Status:</b>
-
-                <span class="${statusClass}">
-                    ${bus.status}
-                </span>
-
-            </div>
-        `;
-    });
-
-    document.getElementById("busList").innerHTML = html;
-}
-
-
-/* UPDATE MAP */
-
-function updateMap(buses) {
-
-    buses.forEach(function(bus) {
-
-        let lat = parseFloat(bus.latitude);
-
-        let lng = parseFloat(bus.longitude);
-
-
-        if (
-            isNaN(lat) ||
-            isNaN(lng) ||
-            lat === 0 ||
-            lng === 0
-        ) {
-            return;
-        }
-
-
-        let popup = `
-
-            <b>🚌 ${bus.bus_number}</b>
-
-            <br><br>
-
-            Driver:
-            ${bus.driver}
-
-            <br>
-
-            Route:
-            ${bus.route}
-
-            <br>
-
-            Speed:
-            ${bus.speed} km/h
-
-            <br>
-
-            Status:
-            ${bus.status}
-
-        `;
-
-
-        if (markers[bus.bus_number]) {
-
-            markers[bus.bus_number]
-                .setLatLng([lat, lng])
-                .setPopupContent(popup);
-
-        } else {
-
-            markers[bus.bus_number] =
-                L.marker([lat, lng])
-                .addTo(map)
-                .bindPopup(popup);
-
-        }
-
-    });
-
-}
-
-
-/* START */
-
+setTimeout(() => map.invalidateSize(), 300);
 loadBuses();
-
-
-/* REAL-TIME UPDATE EVERY 3 SECONDS */
-
-setInterval(function() {
-
-    loadBuses();
-
-}, 3000);
-
+setInterval(loadBuses, 3000);
 </script>
-
 </body>
-
 </html>
